@@ -40,7 +40,7 @@
     <!--  2) Ficha de producto (website_sale.product)  -->
     <template id="product_page_price_tax_breakdown" inherit_id="website_sale.product">
 	<!--  Insertar debajo del bloque de precio principal  -->
-	<xpath expr="(//div[contains(@class,'product_price')])[1]" position="inside">
+	<xpath expr="(//span[@itemprop='price'])[1]/ancestor::h3[1]" position="after">
 	    <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
 	    <t t-if="tax_data and tax_data.get('currency')">
 		<div class="small text-muted mt-2">
