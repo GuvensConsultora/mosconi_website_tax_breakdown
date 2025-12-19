@@ -14,19 +14,23 @@
 
 		<div>
 		    Precio sin impuestos:
-		    <strong t-esc="format_amount(tax_data['price_excluded'], tax_data['currency'])"/>
+		    <strong t-out="tax_data['price_excluded']" t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"/>
+
 		</div>
 
 		<t t-foreach="tax_data['taxes']" t-as="tax">
 		    <div>
 			<t t-esc="tax['name']"/>:
-			<span t-esc="format_amount(tax['amount'], tax_data['currency'])"/>
+			<span t-out="tax['amount']"
+			      t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"/>
 		    </div>
 		</t>
 
+
 		<div class="fw-bold mt-1">
 		    Total:
-		    <span t-esc="format_amount(tax_data['price_included'], tax_data['currency'])"/>
+		    <span t-out="tax_data['price_included']"
+			  t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"/>
 		</div>
 
 	    </div>
