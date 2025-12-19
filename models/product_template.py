@@ -39,4 +39,5 @@ class ProductTemplate(models.Model):
             "price_excluded": res["total_excluded"],
             "price_included": res["total_included"],
             "taxes": res["taxes"],
+            "currency": currency,
         }

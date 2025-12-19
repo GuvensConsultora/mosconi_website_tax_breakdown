@@ -6,33 +6,32 @@
         inherit_id="website_sale.products_item"
     >
 
-        <xpath expr="//div[contains(@class,'product_price')]" position="inside">
+	<xpath expr="//div[contains(@class,'product_price')]" position="inside">
 
-            <t t-set="tax_data"
-               t-value="product.get_website_tax_breakdown(pricelist, partner)"/>
+	    <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
 
-            <div class="small text-muted mt-1">
+	    <div class="small text-muted mt-1">
 
-                <div>
-                    Precio sin impuestos:
-                    <strong t-esc="format_amount(tax_data['price_excluded'], pricelist.currency_id)"/>
-                </div>
+		<div>
+		    Precio sin impuestos:
+		    <strong t-esc="format_amount(tax_data['price_excluded'], tax_data['currency'])"/>
+		</div>
 
-                <t t-foreach="tax_data['taxes']" t-as="tax">
-                    <div>
-                        <t t-esc="tax['name']"/>:
-                        <span t-esc="format_amount(tax['amount'], pricelist.currency_id)"/>
-                    </div>
-                </t>
+		<t t-foreach="tax_data['taxes']" t-as="tax">
+		    <div>
+			<t t-esc="tax['name']"/>:
+			<span t-esc="format_amount(tax['amount'], tax_data['currency'])"/>
+		    </div>
+		</t>
 
-                <div class="fw-bold mt-1">
-                    Total:
-                    <span t-esc="format_amount(tax_data['price_included'], pricelist.currency_id)"/>
-                </div>
+		<div class="fw-bold mt-1">
+		    Total:
+		    <span t-esc="format_amount(tax_data['price_included'], tax_data['currency'])"/>
+		</div>
 
-            </div>
+	    </div>
 
-        </xpath>
+	</xpath>
 
     </template>
 
