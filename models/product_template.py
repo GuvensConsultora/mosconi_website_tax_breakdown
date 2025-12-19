@@ -19,7 +19,7 @@ class ProductTemplate(models.Model):
             partner = self.env.user.partner_id
 
         # 3️⃣ Precio real según pricelist
-        price = pricelist.get_product_price(self, 1.0, partner)
+        price = pricelist._get_product_price(self, 1.0, partner)
 
         # 4️⃣ Impuestos de la compañía actual
         taxes = self.taxes_id.filtered(
