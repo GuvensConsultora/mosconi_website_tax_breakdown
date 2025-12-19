@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-
+    <!--  1) Tarjeta en /shop (grid/list)  -->
     <template
         id="product_item_price_tax_breakdown"
         inherit_id="website_sale.products_item"
@@ -37,5 +37,37 @@
 	</xpath>
 
     </template>
-
+    <!--  2) Ficha de producto (website_sale.product)  -->
+    <template id="product_page_price_tax_breakdown" inherit_id="website_sale.product">
+	<!--  Insertar debajo del bloque de precio principal  -->
+	<xpath expr="(//div[contains(@class,'product_price')])[1]" position="inside">
+	    <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
+	    <t t-if="tax_data and tax_data.get('currency')">
+		<div class="small text-muted mt-2">
+		    <div>
+			Precio sin impuestos:
+			<strong t-out="tax_data['price_excluded']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
+		    </div>
+		    <div>
+			Impuestos:
+			<span t-out="tax_data['tax_total']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
+		    </div>
+		    <t t-if="tax_data['taxes']">
+			<t t-foreach="tax_data['taxes']" t-as="tax">
+			    <div>
+				<t t-esc="tax['name']"/>
+				:
+				<span t-out="tax['amount']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
+			    </div>
+			</t>
+		    </t>
+		    <div class="fw-bold mt-1">
+			Total:
+			<span t-out="tax_data['price_included']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
+		    </div>
+		</div>
+	    </t>
+	</xpath>
+    </template>
+    
 </odoo>
