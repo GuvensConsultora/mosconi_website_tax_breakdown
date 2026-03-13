@@ -26,12 +26,6 @@
 		    </div>
 		</t>
 
-		<div class="fw-bold mt-1">
-		    Total:
-		    <span t-out="tax_data['price_included']"
-			  t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"/>
-		</div>
-
 	    </div>
 
 	</xpath>
@@ -51,7 +45,7 @@
 		    </div>
 		    <div>
 			Impuestos:
-			<span t-out="tax_data['tax_total']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
+			<span t-out="tax_data['price_included'] - tax_data['price_excluded']" t-options="{'widget':'monetary','display_currency': tax_data['currency']}"/>
 		    </div>
 		    <t t-if="tax_data['taxes']">
 			<t t-foreach="tax_data['taxes']" t-as="tax">
