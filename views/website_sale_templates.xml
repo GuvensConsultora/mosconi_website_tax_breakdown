@@ -37,10 +37,11 @@
 	</xpath>
 
     </template>
-    <!--  2) Ficha de producto (website_sale.product)  -->
-    <template id="product_page_price_tax_breakdown" inherit_id="website_sale.product">
-	<!--  Insertar debajo del bloque de precio principal  -->
-	<xpath expr="(//span[@itemprop='price'])[1]/ancestor::h3[1]" position="after">
+    <!--  2) Ficha de producto — hereda de product_price porque el span[@itemprop='price']
+         vive en website_sale.product_price, no en website_sale.product  -->
+    <template id="product_page_price_tax_breakdown" inherit_id="website_sale.product_price">
+	<!--  Insertar después del h3 que contiene el precio  -->
+	<xpath expr="//h3[hasclass('css_editable_mode_hidden')]" position="after">
 	    <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
 	    <t t-if="tax_data and tax_data.get('currency')">
 		<div class="small text-muted mt-2">
