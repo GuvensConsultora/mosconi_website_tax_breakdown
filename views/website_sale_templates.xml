@@ -35,9 +35,7 @@
 
                     <!--
                         Por qué total en lugar de iterar por nombre:
-                        En la tarjeta de tienda el espacio es reducido.
-                        Mostrar "Impuestos" como etiqueta genérica evita
-                        nombres técnicos (VAT, IVA, etc.) y es más claro.
+                        Evita nombres técnicos (VAT, IVA, etc.) en la tarjeta.
                     -->
                     <div>
                         Impuestos:
@@ -48,30 +46,28 @@
                     </div>
 
                 </div>
+
+                <!--
+                    Badge de descuento dentro del mismo xpath para no depender
+                    de name="product_base_price" que puede no existir en todas
+                    las versiones. template_price_vals ya está disponible en
+                    el contexto del template products_item.
+
+                    Cálculo: (base_price - price_reduce) / base_price * 100
+                -->
+                <t t-if="'base_price' in template_price_vals
+                         and template_price_vals.get('base_price', 0) > template_price_vals.get('price_reduce', 0)
+                         and template_price_vals.get('price_reduce')">
+                    <span class="badge bg-danger mt-1">
+                        <t t-esc="'-' + str(round(
+                            (template_price_vals['base_price'] - template_price_vals['price_reduce'])
+                            / template_price_vals['base_price'] * 100
+                        )) + '%'"/>
+                    </span>
+                </t>
+
             </t>
 
-        </xpath>
-
-        <!--
-            Porcentaje de descuento en tarjeta de tienda.
-
-            Por qué position="after" sobre product_base_price: El <t name="product_base_price">
-            es el contenedor del precio tachado. Insertamos inmediatamente después.
-
-            Cálculo: (precio_original - precio_reducido) / precio_original * 100
-            Por qué round(): Evitar decimales irrelevantes (ej: 33.333... → 33%)
-        -->
-        <xpath expr="//*[@name='product_base_price']" position="after">
-            <t t-if="'base_price' in template_price_vals
-                     and template_price_vals.get('base_price', 0) > template_price_vals.get('price_reduce', 0)
-                     and template_price_vals.get('price_reduce')">
-                <span class="badge bg-danger ms-1">
-                    <t t-esc="'-' + str(round(
-                        (template_price_vals['base_price'] - template_price_vals['price_reduce'])
-                        / template_price_vals['base_price'] * 100
-                    )) + '%'"/>
-                </span>
-            </t>
         </xpath>
 
     </template>
