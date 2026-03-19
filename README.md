@@ -1,61 +1,73 @@
-# Website Sale - Desglose completo de impuestos
+# Website Sale — Desglose de impuestos y descuentos
 
 ## 1. Introducción
 
 ### Qué hace Odoo nativamente
-Odoo eCommerce muestra un único precio en la tienda online (con o sin impuestos, según configuración fiscal). El usuario no ve el detalle de qué impuestos componen ese precio ni cuánto representa cada uno.
+Odoo eCommerce muestra un único precio en la tienda online (con impuestos incluidos, según la configuración fiscal del sitio). El usuario no ve el detalle de qué impuestos componen ese precio ni cuánto representa cada uno. Tampoco indica el porcentaje de ahorro cuando un producto tiene descuento.
 
 ### Limitación
-En Argentina (y otros países con múltiples impuestos como IVA, percepciones IIBB, impuestos internos), el cliente necesita ver el desglose antes de comprar. Sin esta información, el precio final puede generar confusión o desconfianza.
+En Argentina, con múltiples impuestos (IVA, percepciones IIBB, impuestos internos), el cliente necesita ver el desglose antes de comprar. Además, en catálogos con descuentos por lista de precios, no se comunica visualmente cuánto se ahorra en porcentaje.
 
 ### Qué hace este módulo
-Agrega debajo de cada precio — tanto en el listado de productos (`/shop`) como en la ficha individual del producto — un desglose que muestra:
-- Precio sin impuestos
-- Cada impuesto aplicado con su monto
-- Total final con impuestos incluidos
+- Muestra debajo de cada precio el desglose: precio sin impuestos + cada impuesto por nombre y monto.
+- **No muestra el "Total"** (redundante con el precio principal ya visible).
+- Cuando hay precio tachado por descuento, calcula y muestra el porcentaje de ahorro (`−33%`).
+
+Aplica tanto en el listado de productos (`/shop`) como en la ficha individual del producto.
 
 ---
 
 ## 2. Funcionamiento para el usuario final
 
 ### En el listado de productos (`/shop`)
-Debajo del precio de cada producto aparece un bloque con:
+
+Debajo del precio de cada tarjeta aparece:
 
 | Campo | Ejemplo |
 |-------|---------|
-| Precio sin impuestos | $ 1.000,00 |
+| Precio sin imp. | $ 1.000,00 |
 | IVA 21% | $ 210,00 |
 | Percepción IIBB 3% | $ 30,00 |
-| **Total** | **$ 1.240,00** |
+
+Si el producto tiene descuento activo, el precio original aparece tachado con el porcentaje de ahorro al lado:
+
+```
+~~$ 1.500,00~~  −33%   →   $ 1.000,00
+```
 
 ### En la ficha del producto
-Al ingresar al detalle de un producto, debajo del precio principal se muestra el mismo desglose con el formato:
 
-- **Precio sin impuestos:** monto neto
-- **Impuestos:** suma total de impuestos
-- Detalle línea por línea de cada impuesto
-- **Total:** precio final con impuestos
+Debajo del bloque de precio principal se muestra el mismo desglose de impuestos. Si hay descuento, el porcentaje aparece junto al precio tachado:
+
+```
+~~$ 1.500,00~~  −33%
+$ 1.000,00
+  Precio sin imp.: $ 826,45
+  IVA 21%: $ 173,55
+```
 
 ### Reglas de negocio
-- Los impuestos mostrados son los configurados en el producto (`taxes_id`), filtrados por la compañía actual.
-- El precio base se calcula usando la tarifa de precios (pricelist) activa del sitio web.
+- Los impuestos mostrados son los configurados en el producto (`taxes_id`), filtrados por la compañía activa.
+- El precio base usa la tarifa de precios (pricelist) activa del sitio web.
 - La moneda se toma de la pricelist; si no existe, se usa la moneda de la compañía.
+- El porcentaje de descuento solo aparece si el precio reducido es menor al precio original (nunca muestra `0%`).
 
 ---
 
 ## 3. Parametrización
 
-No requiere configuración adicional. El módulo funciona automáticamente al instalarlo.
+No requiere configuración adicional. Funciona automáticamente al instalarlo.
 
 ### Requisitos previos
-1. **Impuestos configurados en productos:** Ir a *Ventas > Productos > [Producto] > Pestaña "Información General"* y verificar que el campo *Impuestos del cliente* tenga los impuestos correspondientes (IVA, percepciones, etc.).
-2. **Tarifa de precios activa:** Ir a *Sitio web > eCommerce > Tarifas de precios* y verificar que la tarifa del sitio web tenga una moneda asignada.
+1. **Impuestos en productos:** *Ventas > Productos > [Producto] > Pestaña "Información General"* → campo *Impuestos del cliente*.
+2. **Tarifa de precios activa:** *Sitio web > eCommerce > Tarifas de precios* → verificar moneda asignada.
+3. **Descuentos activos** (para mostrar %): *Sitio web > Configuración > Vender a precio con descuento* o usar listas de precios con descuento.
 
 ### Instalación
-1. Copiar el módulo `mosconi_website_tax_breakdown` en el directorio de addons.
+1. Copiar `mosconi_website_tax_breakdown` en el directorio de addons.
 2. Activar modo desarrollador.
-3. Ir a *Aplicaciones > Actualizar lista de aplicaciones*.
-4. Buscar "Website Sale - Desglose completo de impuestos" e instalar.
+3. *Aplicaciones > Actualizar lista de aplicaciones*.
+4. Buscar "Website Sale - Desglose de impuestos y descuentos" e instalar.
 
 ---
 
@@ -69,9 +81,9 @@ mosconi_website_tax_breakdown/
 ├── __manifest__.py
 ├── models/
 │   ├── __init__.py
-│   └── product_template.py      # Herencia de product.template
+│   └── product_template.py        # Herencia product.template
 └── views/
-    └── website_sale_templates.xml # Herencia de vistas QWeb
+    └── website_sale_templates.xml  # Herencia templates QWeb
 ```
 
 ### Dependencias
@@ -81,33 +93,37 @@ mosconi_website_tax_breakdown/
 
 **Método `get_website_tax_breakdown(pricelist=None, partner=None)`**
 
-Retorna un diccionario con el desglose fiscal del producto:
+Retorna el desglose fiscal del producto:
 
 ```python
 {
     "price_excluded": float,   # Precio neto sin impuestos
-    "price_included": float,   # Precio total con impuestos
-    "taxes": [                 # Lista de impuestos aplicados
-        {"name": str, "amount": float, ...}
-    ],
-    "currency": res.currency,  # Singleton de moneda
+    "price_included": float,   # Precio total con impuestos (no se muestra en UI)
+    "taxes": [{"name": str, "amount": float, ...}],
+    "currency": res.currency,  # Singleton obligatorio para widget monetary
 }
 ```
 
 Lógica:
-1. Resuelve pricelist → currency → partner con fallbacks seguros.
+1. Resuelve pricelist → currency → partner con fallbacks seguros (nunca lanza error en render público).
 2. Obtiene la primera variante del producto.
-3. Calcula precio usando `pricelist._get_product_price()`.
-4. Aplica `taxes.compute_all()` filtrado por compañía actual.
+3. Calcula precio con `pricelist._get_product_price()`.
+4. Aplica `taxes.compute_all()` filtrado por compañía activa.
 
 ### Vistas QWeb (herencia)
 
-| Template | Hereda de | XPath | Ubicación |
-|----------|-----------|-------|-----------|
-| `product_item_price_tax_breakdown` | `website_sale.products_item` | `//div[contains(@class,'product_price')]` | Listado `/shop` |
-| `product_page_price_tax_breakdown` | `website_sale.product_price` | `//h3[hasclass('css_editable_mode_hidden')]` | Ficha producto |
+| Template | Hereda de | XPath target | Posición |
+|----------|-----------|--------------|----------|
+| `product_item_price_tax_breakdown` | `website_sale.products_item` | `//div[contains(@class,'product_price')]` | inside — desglose impuestos |
+| `product_item_price_tax_breakdown` | `website_sale.products_item` | `//*[@name='product_base_price']` | after — badge % descuento |
+| `product_page_price_tax_breakdown` | `website_sale.product_price` | `//div[@name='product_price_container']` | after — desglose impuestos |
+| `product_page_price_tax_breakdown` | `website_sale.product_price` | `//span[@name='product_list_price']` | after — badge % descuento |
 
-**Decisión técnica:** La ficha de producto hereda de `website_sale.product_price` (no de `website_sale.product`) porque el elemento de precio (`<span itemprop="price">`) vive en ese template, que se incluye via `t-call`. Los xpath de herencia QWeb solo operan sobre el arch del template padre directo.
+**Decisiones técnicas:**
+- La ficha hereda de `website_sale.product_price` (no `website_sale.product`) porque el bloque de precio vive en ese sub-template incluido via `t-call`. Los xpath de herencia QWeb operan solo sobre el arch del template padre directo.
+- No se muestra "Total" en el desglose: el precio principal ya es el precio con impuestos; repetirlo genera confusión.
+- El badge de descuento usa `round()` para evitar decimales (ej: `33.33...%` → `−33%`).
+- La condición de descuento verifica `price_reduce > 0` para no mostrar `−100%` en productos gratis.
 
 ### Seguridad
-No define grupos ni permisos propios. El desglose es visible para todos los usuarios del sitio web (público y registrados).
+Sin grupos ni permisos propios. El desglose es visible para todos los usuarios del sitio (público y registrados).
