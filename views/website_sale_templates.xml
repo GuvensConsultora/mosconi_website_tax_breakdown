@@ -87,10 +87,13 @@
         inherit_id="website_sale.product_price"
     >
         <!--
-            Por qué css_editable_mode_hidden: Este div ya existe en el template
-            padre con esa clase, insertamos después para mantener el orden visual.
+            Odoo 18: el bloque de precio está dentro de h3.css_editable_mode_hidden.
+            Insertamos el desglose inmediatamente después de ese h3.
+
+            Por qué NO usar name=: En Odoo 18 product_price no usa atributos name,
+            solo clases CSS (css_editable_mode_hidden, oe_price, oe_default_price).
         -->
-        <xpath expr="//div[@name='product_price_container']" position="after">
+        <xpath expr="//h3[hasclass('css_editable_mode_hidden')]" position="after">
 
             <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
 
@@ -106,9 +109,8 @@
                     </div>
 
                     <!--
-                        Por qué total genérico y no iterar por nombre:
-                        Evita mostrar nombres técnicos (VAT, IVA, etc.).
-                        El total de impuestos = price_included - price_excluded.
+                        Por qué total genérico: evita nombres técnicos (VAT, IVA, etc.).
+                        Total impuestos = price_included - price_excluded.
                     -->
                     <div>
                         Impuestos:
@@ -124,19 +126,17 @@
         </xpath>
 
         <!--
-            Porcentaje de descuento en ficha de producto.
+            Badge % descuento en ficha de producto.
 
-            Por qué sobre product_list_price: Es el span del precio tachado
-            (list_price cuando has_discounted_price=True).
-
+            Odoo 18: el precio tachado usa clase oe_default_price (no name=).
             combination_info['list_price'] = precio original (tachado)
-            combination_info['price']      = precio actual con descuento
+            combination_info['price']      = precio con descuento
         -->
-        <xpath expr="//span[@name='product_list_price']" position="after">
+        <xpath expr="//span[hasclass('oe_default_price')]" position="after">
             <t t-if="combination_info.get('has_discounted_price')
                      and combination_info.get('list_price', 0) > 0
                      and combination_info.get('price', 0) > 0">
-                <span class="badge bg-danger ms-1 align-self-center">
+                <span class="badge bg-danger ms-1">
                     <t t-esc="'-' + str(round(
                         (combination_info['list_price'] - combination_info['price'])
                         / combination_info['list_price'] * 100
