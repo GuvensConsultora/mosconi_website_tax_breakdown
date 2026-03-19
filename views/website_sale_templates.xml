@@ -145,6 +145,28 @@
 
         </xpath>
 
+        <!--
+            Badge % descuento junto al precio tachado dentro del h3.
+
+            Por qué itemprop='listPrice': Es el único atributo ESTÁTICO del span
+            del precio tachado (oe_default_price usa t-attf-class dinámico que el
+            engine no resuelve en el arch). itemprop="listPrice" sí está en el XML.
+
+            Resultado visual: ~~$ 1.500,00~~  −33%  (inline con el precio tachado)
+        -->
+        <xpath expr="//span[@itemprop='listPrice']" position="after">
+            <t t-if="combination_info.get('has_discounted_price')
+                     and combination_info.get('list_price', 0) > 0
+                     and combination_info.get('price', 0) > 0">
+                <span class="badge bg-danger ms-1">
+                    <t t-esc="'-' + str(round(
+                        (combination_info['list_price'] - combination_info['price'])
+                        / combination_info['list_price'] * 100
+                    )) + '%'"/>
+                </span>
+            </t>
+        </xpath>
+
     </template>
 
 </odoo>
