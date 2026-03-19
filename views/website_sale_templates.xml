@@ -93,6 +93,12 @@
             Por qué NO usar name=: En Odoo 18 product_price no usa atributos name,
             solo clases CSS (css_editable_mode_hidden, oe_price, oe_default_price).
         -->
+        <!--
+            Odoo 18: product_price usa h3.css_editable_mode_hidden como contenedor.
+            Insertamos desglose Y badge de descuento en un solo xpath para evitar
+            depender de atributos dinámicos (t-attf-class) que el engine no resuelve
+            en tiempo de parseo del arch.
+        -->
         <xpath expr="//h3[hasclass('css_editable_mode_hidden')]" position="after">
 
             <t t-set="tax_data" t-value="product.get_website_tax_breakdown()"/>
@@ -108,10 +114,7 @@
                         />
                     </div>
 
-                    <!--
-                        Por qué total genérico: evita nombres técnicos (VAT, IVA, etc.).
-                        Total impuestos = price_included - price_excluded.
-                    -->
+                    <!-- Total impuestos = price_included - price_excluded -->
                     <div>
                         Impuestos:
                         <span
@@ -123,26 +126,23 @@
                 </div>
             </t>
 
-        </xpath>
-
-        <!--
-            Badge % descuento en ficha de producto.
-
-            Odoo 18: el precio tachado usa clase oe_default_price (no name=).
-            combination_info['list_price'] = precio original (tachado)
-            combination_info['price']      = precio con descuento
-        -->
-        <xpath expr="//span[hasclass('oe_default_price')]" position="after">
+            <!--
+                Badge % descuento: se muestra solo si has_discounted_price es True.
+                Por qué aquí y no en xpath separado: t-attf-class="... oe_default_price ..."
+                usa atributo dinámico que el xpath engine no puede resolver en el arch
+                estático — hasclass() falla en tiempo de parseo.
+            -->
             <t t-if="combination_info.get('has_discounted_price')
                      and combination_info.get('list_price', 0) > 0
                      and combination_info.get('price', 0) > 0">
-                <span class="badge bg-danger ms-1">
+                <span class="badge bg-danger mt-1">
                     <t t-esc="'-' + str(round(
                         (combination_info['list_price'] - combination_info['price'])
                         / combination_info['list_price'] * 100
                     )) + '%'"/>
                 </span>
             </t>
+
         </xpath>
 
     </template>
