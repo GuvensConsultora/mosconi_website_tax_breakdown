@@ -33,18 +33,6 @@
                         />
                     </div>
 
-                    <!--
-                        Por qué total en lugar de iterar por nombre:
-                        Evita nombres técnicos (VAT, IVA, etc.) en la tarjeta.
-                    -->
-                    <div>
-                        Impuestos:
-                        <span
-                            t-out="tax_data['price_included'] - tax_data['price_excluded']"
-                            t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"
-                        />
-                    </div>
-
                 </div>
 
                 <!--
@@ -110,15 +98,6 @@
                         Precio sin imp.:
                         <strong
                             t-out="tax_data['price_excluded']"
-                            t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"
-                        />
-                    </div>
-
-                    <!-- Total impuestos = price_included - price_excluded -->
-                    <div>
-                        Impuestos:
-                        <span
-                            t-out="tax_data['price_included'] - tax_data['price_excluded']"
                             t-options="{'widget': 'monetary', 'display_currency': tax_data['currency']}"
                         />
                     </div>
