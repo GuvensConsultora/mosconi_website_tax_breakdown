@@ -1,6 +1,6 @@
 {
     "name": "Website Sale - Desglose completo de impuestos",
-    "version": "18.0",
+    "version": "18.0.1.0",
     "category": "Website",
     "depends": ["website_sale"],
     "data": [

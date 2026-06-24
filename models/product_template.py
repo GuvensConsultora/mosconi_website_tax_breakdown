@@ -19,7 +19,13 @@ class ProductTemplate(models.Model):
             currency = self.env["res.currency"].sudo().search([], limit=1)
 
         # --- Partner fallback ---
-        partner = partner or (website and website.user_id.partner_id) or self.env.user.partner_id
+        # sudo() en website.user_id.partner_id: ese partner es el del usuario
+        # público del sitio y se usa solo para computar el precio/impuesto
+        # "público" del listado (igual para todos). Sin sudo, un cliente PORTAL
+        # logueado no puede leer ese contacto ajeno (regla nativa: solo su
+        # propio árbol) → AccessError → 403 en todo /shop. El sudo cubre solo
+        # esa lectura, no altera precios ni permisos de nada más.
+        partner = partner or (website and website.user_id.sudo().partner_id) or self.env.user.partner_id
 
         # --- Producto (usar variante para precios/impuestos en Odoo 18) ---
         product = (self.product_variant_id or self.product_variant_ids[:1])
